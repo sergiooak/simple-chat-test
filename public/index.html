@@ -34,7 +34,7 @@
     </form>
   </div>
   <script type="text/javascript">
-  const socket = io('http://localhost:3000/');
+  const socket = io('/');
   socket.on('receivedMessage', function(data){
     app.renderMessage(data);
   })
