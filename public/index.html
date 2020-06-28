@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+  <style media="screen">
+    #content{
+      max-height: calc((100vh - 76px) - 76px);
+      overflow-y: scroll;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js" integrity="sha256-OgiHfllOBEOiWQ2OcBsDncRG2k7QBW9Rs1dB7MH2N2s=" crossorigin="anonymous"></script>
+  <title>Chat</title>
+</head>
+<body class="bg-gray-200">
+  <div class="container mx-auto h-screen" id="app">
+    <form @submit.prevent="submit()" class="w-full bg-white shadow-lg">
+      <div class="p-4">
+        <input v-model="nome" type="text" placeholder="nome" class="px-4 py-2 border-2 border-gray-400 w-full">
+      </div>
+      <div id="content" class="p-4">
+        <div v-for="message in messages" class="border border-gray-200 p-4 flex">
+          <div class="font-bold text-gray-900 mr-4">{{ message.nome }}:</div>
+          <div class="text-gray-700">{{ message.mensagem }}</div>
+        </div>
+      </div>
+      <div class="p-4 flex">
+        <input v-model="mensagem" type="text" placeholder="mensagem" class="px-4 py-2 border-2 border-gray-400 w-full">
+        <input type="submit" value="Enviar" class="cursor-pointer bg-green-700 text-green-200 px-4 py-2 font-bold uppercase">
+      </div>
+    </form>
+  </div>
+  <script type="text/javascript">
+  const socket = io('http://localhost:3000/');
+  socket.on('receivedMessage', function(data){
+    app.renderMessage(data);
+  })
+
+  socket.on('olderMessages', function(data){
+    app.renderOlderMessages(data);
+  })
+
+  var app = new Vue({
+    el: '#app',
+    data: {
+      nome: '',
+      mensagem: '',
+      messages: [
+      ],
+    },
+    methods: {
+      submit(){
+        let msg = {
+          nome: this.nome,
+          mensagem: this.mensagem
+        }
+
+        this.renderMessage(msg)
+
+        socket.emit('sendMessage', msg);
+
+        this.mensagem = ''
+      },
+      renderMessage(obj){
+        this.messages.push(obj);
+        this.scrollToBottom();
+      },
+      renderOlderMessages(messages){
+        for (var msg of messages) {
+          this.messages.push(msg)
+        }
+        this.scrollToBottom();
+      },
+      scrollToBottom(){
+        setTimeout(function () {
+          console.log('da scroll');
+          let content = document.querySelector('#content');
+          let height = content.scrollHeight;
+          content.scrollTop = height;          
+        }, 100);
+      }
+    },
+  })
+  </script>
+</body>
+</html>
