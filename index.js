@@ -17,14 +17,18 @@ app.use('/', (req, res) => {
 let messages = [];
 
 io.on('connection', socket => {
+  let date = Date.now();
+
+  console.log(`Socket conectado: ${socket.id} | ${date}`);
   socket.emit('olderMessages', messages)
 
   io.emit('receivedMessage', {
     nome: 'Bot',
-    mensagem: '🤖 Um novo arrombado se conectou'
+    mensagem: `🤖 Um novo arrombado se conectou (${date})`
   })
 
   socket.on('sendMessage', data => {
+    console.log(`Mensagem Recebida: ${data}`);
     messages.push(data);
     socket.broadcast.emit('receivedMessage', data)
   })
